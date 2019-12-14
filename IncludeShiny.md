@@ -137,3 +137,9 @@ second period grade (numeric: from 0 to 20)
 **G3**
 
 final grade (numeric: from 0 to 20)
+
+
+# About the App: <h4>
+
+The Shiny app has following tabs:
+ ** **

@@ -1,8 +1,13 @@
-install.packages("rsample")
-install.packages("fpc")
-install.packages("rpart")
-install.packages("rpart.plot")
-install.packages("ipred")
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+ # sapply(pkg, require, character.only = TRUE)
+}
+
+# Usage example
+packages<-c("rsample", "fpc", "rpart", "rpart.plot", "ipred", "summarytools","corrplot")
+check.packages(packages)
 
 library(shiny)
 library(shinydashboard) 
