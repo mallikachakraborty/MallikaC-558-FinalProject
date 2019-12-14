@@ -2,15 +2,22 @@
 This data approach student achievement in secondary education of two Portuguese schools. The data attributes include student grades, demographic, social and school related features) and it was collected by using school reports and questionnaires. Two datasets are provided regarding the performance in two distinct subjects: Mathematics (mat) and Portuguese language (por). In [Cortez and Silva, 2008], the two datasets were modeled under binary/five-level classification and regression tasks. Important note: the target attribute G3 has a strong correlation with attributes G2 and G1. This occurs because G3 is the final year grade (issued at the 3rd period), while G1 and G2 correspond to the 1st and 2nd period grades. It is more difficult to predict G3 without G2 and G1, but such prediction is much more useful (see paper source for more details).
 Source: https://www.kaggle.com/dipam7/student-grade-prediction
 
-# Using this Shiny App we will explore the following:<h6>
+# The Shiny App contains following information:<h6>
 
-	* What are the parameters influences Grades e.g.
-		* Education Of Parents
-		* Financial Situation
-		* Males Vs Female/ Age of the Students
-		* Commute time
-	* Unsupervised Learning from the Data/ Student Segments
-	* Predict Students Grade: Decision Tree/ K Nearest Neighbor
+	* Sample
+		* Sample Data - User can change number of rows to view
+		* Numeric Summary
+	* Data Exploration
+		* Correlation plot among all predictor variables
+		* Relationship between response and predictor variable - i. User can add/remove predictor. ii. Select part of the plot to view details. iii. Download plot 
+	* Cluster
+		* Line plot assisting user to select optimal number of clusters
+		* The cluster plot (dendrogram is in the next tab- the decision tree) 
+	* Models for Predictions
+		* Drop down to select supervised model - i. Regression Tree ii. Bagging
+		* Plot/Important variable assisting user to customize the model further
+	* Predict Grades
+		* User can select the values for predictor variables to get prediction of scores. The values of predictor variables are restricted to test dataset.
 	
 
 # Feature Description <h6>
@@ -151,13 +158,13 @@ This page also shows the numerical summary of raw data.
 The top section of this page contains the correlation plot among all predictor variables.
 The bottom section of the page shows relationship between predictor variables and response score variable. User can select as many predictor variables s/he needs.
 
-**Cluster**
+**Cluster**   
 The cluster page shows the k-means cluster plots. 
 The top section line plot helps user to select optimal number of clusters.
 
 The bottom section has the drop down for user to select number of cluster and the graph refreshes accordingly.           
 
-**Predict**
+**Predict**  
 
 The first drop down filter lets user select the supervised model s/he needs to use in study. Models used are 1. Regression Tree and, 2. Bagging
 

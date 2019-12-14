@@ -112,7 +112,7 @@ saveData <- function(data) {
     
     
     responses1 <<- outSampleData
-    responses1["TreeOut"] <- predict(outPutTreeModel, newdata = responses1)
+    # responses1["TreeOut"] <- predict(outPutTreeModel, newdata = responses1)
 }
 
 loadData <- function() {
@@ -143,7 +143,7 @@ ui <- dashboardPage(
                 column(width = 12,
                        box(
                            title = "Sample Data", width = NULL, status = "primary",
-                           div(style = 'overflow-x: scroll', tableOutput('infoHeader')), # Div Brings Horizontal Scroll if table doesnt fits in width
+                           div(style = 'overflow-x: scroll', DT::dataTableOutput('infoHeader')), # Div Brings Horizontal Scroll if table doesnt fits in width
                            downloadButton(outputId = "downLoadSampleCSV", label="downloadCSV")
                        ),
                        box(
@@ -272,11 +272,11 @@ ui <- dashboardPage(
                                ),
                         fluidRow(
                             column(width=12,
-                                   # HTML(print("<b>User selected:</b>")),
-                                   # box(
-                                   #     title = "User Input", width = NULL, status = "primary",
-                                   #     div(style = 'overflow-x: scroll', DT::dataTableOutput("responses1"))
-                                   # ),
+                                   HTML(print("<b>User selected:</b>")),
+                                   box(
+                                       title = "User Input", width = NULL, status = "primary",
+                                       div(style = 'overflow-x: scroll', DT::dataTableOutput("responses1"))
+                                   ),
                                    # #, width = 300), tags$hr(),
                                    box(
                                        title = "Avg G1, G2, G3 Grades Prediction: Regression Tree:", width = NULL, status = "primary",
@@ -299,7 +299,7 @@ ui <- dashboardPage(
 
 server <- function(input, output) {
 # For Summary Section
-    output$infoHeader <-renderTable({
+    output$infoHeader <-DT::renderDataTable({
         withProgress(message = 'Loading Data',
                      detail = 'This may take a while...', value = 0, {
                          for (i in 1:15) {
@@ -307,8 +307,23 @@ server <- function(input, output) {
                              Sys.sleep(0.25)
                          }
                      })
-        head(mathDataSetReactive)
+        # head(mathDataSetReactive)
+      mathDataSetReactive
     })
+    
+    output$downLoadSampleCSV <- downloadHandler(
+      filename = function(){
+        paste0("StudentGradeSampleFile",".","csv")
+      },
+      content = function(file){
+          write.csv(head(mathDataSetReactive), file, row.names = FALSE)
+
+      }
+      # content = function(file) {
+      #   write.table(mathDataSetReactive[10,], file, row.names = FALSE)
+      # }
+      
+    ) # end of downloadHandler:downLoadSampleCSV
     output$profileSummary <- renderUI({
         SumProfile <- print(dfSummary(mathDataSetReactive), omit.headings = TRUE, method = 'render')
         SumProfile
@@ -505,14 +520,7 @@ server <- function(input, output) {
             
         }) # end of downloadHandler:downloadDataAnalysisPlot
     
-    output$downLoadSampleCSV <- downloadHandler(
-        filename = function(){
-            paste0("StudentGradeSampleFile",".","csv")
-        },
-        content = function(file){
-            write.csv(head(mathDataSetReactive), file, row.names = FALSE)
-            
-        }) # end of downloadHandler:downLoadSampleCSV
+    
 }
 
 shinyApp(ui, server)
