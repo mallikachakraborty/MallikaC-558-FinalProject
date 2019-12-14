@@ -1,3 +1,21 @@
+########################################################################################
+#Author: Mallika Chakraborty
+#Date: 12/13/2019
+#Script: ST 558 Final Project R code
+
+########################################################################################
+
+
+check.packages <- function(pkg){
+    new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+    if (length(new.pkg)) 
+        install.packages(new.pkg, dependencies = TRUE)
+    # sapply(pkg, require, character.only = TRUE)
+}
+
+packages<-c("rsample", "fpc", "rpart", "rpart.plot", "ipred", "summarytools","corrplot")
+check.packages(packages)
+
 library(shiny)
 library(shinydashboard) 
 library(summarytools)  ## to provide summary of the meta data 
@@ -7,12 +25,15 @@ library(dplyr)
 library(corrplot)
 library(ggplot2) 
 library(cluster) # for gower similarity and pam
-library(Rtsne) # for t-SNE plot
+#library(Rtsne) # for t-SNE plot
 library(fpc)
 library(tree) # for decision Tree
-library(MASS) 
+# library(MASS) 
+library(rpart)       # performing regression trees
+library(rpart.plot)  # plotting regression trees
 library(ipred) # bagging
 library(caret) # bagging
+library(rsample)     # data splitting 
 
 
 # setwd("~/StudentsMath")
@@ -29,6 +50,7 @@ out <- out1
 out$GAvg <- rowMeans(out[,c("G1","G2","G3")])
 drops <- c("G1","G2","G3")
 out <- out[ , !(names(out) %in% drops)]
+outSampleData <- sample_n(out, 1)
 
 gower_dist <- daisy(out,metric = "gower",type = list(logratio = 3))
 # Calculate silhouette width for many k using PAM
@@ -50,6 +72,12 @@ out_train <- training(out_split)
 out_test  <- testing(out_split)
 # Regression Tree
 m1 <- rpart(formula=GAvg ~ .,data=out_train,method="anova")
+outPutTreeModel <- rpart(
+    formula = GAvg ~ .,
+    data    = out_train,
+    method  = "anova", 
+    control = list(minsplit = 10, maxdepth = 20, xval = 10)
+)
 
 # Bagging Model
 ctrl <- trainControl(method = "cv",  number = 10) 
@@ -64,6 +92,35 @@ bagged_cv <- train(
 )
 ctrl <- trainControl(method = "cv",  number = 10) 
 
+## Take Inputs from User to predict Students Grade
+
+saveData <- function(data) {
+    prdInpdata <- as.data.frame(t(data))
+    # ("InpStudentAge","InpMedu","InpFedu","InpStudyTimeinHours","InpFreetime","InpWorkDayAlc","InpWeekEndAlc","InpAbsence",
+    #     "InpHealth","InpHigherEd","Inpfamsup" )
+    outSampleData["age"] <- as.numeric(prdInpdata["InpStudentAge"])
+    outSampleData["Medu"] <- as.numeric(prdInpdata["InpMedu"])
+    outSampleData["Fedu"] <- as.numeric(prdInpdata["InpFedu"])
+    outSampleData["studytime"] <- as.numeric(prdInpdata["InpStudyTimeinHours"])
+    outSampleData["freetime"] <- as.numeric(prdInpdata["InpFreetime"])
+    outSampleData["Dalc"] <- as.numeric(prdInpdata["InpWorkDayAlc"])
+    outSampleData["Walc"] <- as.numeric(prdInpdata["InpWeekEndAlc"])
+    outSampleData["absences"] <- as.numeric(as.character(prdInpdata["InpAbsence"]))
+    outSampleData["health"] <- as.numeric(prdInpdata["InpHealth"])
+    # outSampleData["higher"] <- prdInpdata["InpHigherEd"]
+    # outSampleData["famsup"] <- prdInpdata["Inpfamsup"]
+    
+    
+    responses1 <<- outSampleData
+    responses1["TreeOut"] <- predict(outPutTreeModel, newdata = responses1)
+}
+
+loadData <- function() {
+    if (exists("responses1")) {
+        responses1
+    }
+}
+
 ui <- dashboardPage(
     dashboardHeader(title = "Student Grade Prediction"),
     dashboardSidebar(
@@ -73,7 +130,8 @@ ui <- dashboardPage(
             menuItem("Sample", tabName = "dashboard", icon = icon("vials")),
             menuItem("Data Exploration", tabName = "DataAnalysis", icon = icon("chart-bar")),
             menuItem("Cluster", tabName = "Clusters", icon = icon("object-group")),
-            menuItem("Predict", tabName = "PredictGrades", icon = icon("graduation-cap"))
+            menuItem("Models for Predictions", tabName = "PredictionModels", icon = icon("graduation-cap")),
+            menuItem("Predict Grades", tabName = "PredictGrades", icon = icon("superscript"))
             
         ) # end of sidebarMenu
     ), # dashboardSidebar
@@ -81,6 +139,7 @@ ui <- dashboardPage(
         tabItems(
             tabItem(tabName = "dashboard",
                 fluidRow(
+
                 column(width = 12,
                        box(
                            title = "Sample Data", width = NULL, status = "primary",
@@ -96,6 +155,13 @@ ui <- dashboardPage(
                 ), # end of tabItem 1
             tabItem(tabName = "AboutData",
                     fluidRow(
+                        infoBox("Students Count", 395, icon = icon("list-ol")),
+                        infoBox("Number of Female Students", 208, icon = icon("female")),
+                        infoBox("Number of Male Students", 187, icon = icon("male")),
+                        infoBox("Number of features", 33, icon = icon("columns")),
+                        infoBox("Number of Continous Variables", 4, icon = icon("cuttlefish")),
+                        infoBox("Number of Categorical Variables", 29, icon = icon("bitbucket")),
+                        
                         column(width = 12,
                                includeMarkdown("IncludeShiny.md")
                                )
@@ -146,7 +212,7 @@ ui <- dashboardPage(
                     )
                     
                 ), # end of tabItem 4:Clusters
-            tabItem(tabName = "PredictGrades",
+            tabItem(tabName = "PredictionModels",
                     fluidRow(
                         column(width = 12,
                                selectInput("PredictionModel","Select the Model:",c("Regression Tree"="dct","Bagging"="bag")),
@@ -159,8 +225,7 @@ ui <- dashboardPage(
                                    numericInput("RMaxTreeDepth","Select Max Tree Depth:", 8, min = 2, max = 100),
                                    plotOutput("DecisionTree"),
                                    HTML(print("<b>RMSE::</b></br>")),
-                                   textOutput("DecisionTreeRMSE"),
-                                   HTML(print("<b>Choose input for prediction:</b>"))
+                                   textOutput("DecisionTreeRMSE")
                                 ),
                                conditionalPanel(
                                    condition = "input.PredictionModel == 'bag'",
@@ -176,7 +241,58 @@ ui <- dashboardPage(
                         
                     )
                     
-                ) # end of tabItem 5:PredictGrades
+                ), # end of tabItem 5:SuperVised Prediction Models
+            tabItem(tabName = "PredictGrades",
+                    fluidRow(
+                        HTML(print("<b>Choose input for prediction:</b>")),
+               
+                        column(width = 4,
+                                   #HTML(print("<b>Choose input for prediction:</b>")),
+                                   # Select Input for Prediction
+                                   
+                                   sliderInput("InpStudentAge", "Age in years",15, 22, 1, ticks = FALSE),
+                                   sliderInput("InpHealth", "Health: 1 is bad 5 is very good:",1, 5, 1, ticks = FALSE)
+                               ),
+                        
+                        column(width = 4,     
+                                   sliderInput("InpAbsence", "Days absent in School",0, 15, 1, ticks = FALSE),
+                                   sliderInput("InpStudyTimeinHours", "Study Time in Hours",1, 10, 1, ticks = FALSE),
+                                   sliderInput("InpFreetime", "FreeTime: 1 is low 5 is high:",1, 5, 1, ticks = FALSE)
+                               ),
+                        column(width = 4, 
+                                   sliderInput("InpWeekEndAlc", "Weekend Alcohol: 1-low 5 is high:",1, 5, 1, ticks = FALSE),
+                                   sliderInput("InpWorkDayAlc", "Workday Alcohol: 1-low 5 is high:",1, 5, 1, ticks = FALSE),
+                                   # radioButtons("InpHigherEd", "Wants to take higher Education", c("Yes" = "yes","No" = "no")),
+                                   
+                                   sliderInput("InpFedu", "Father's Education: 0 is none 4 is High Education:",0, 4, 1, ticks = FALSE),
+                                   sliderInput("InpMedu", "Mother's Education:0 is none 4 is High Education:",0, 4, 1, ticks = FALSE),
+                                   # radioButtons("Inpfamsup", "Family Education Support", c("Yes" = "yes","No" = "no")),
+                                   
+                                   actionButton("submit", "Submit")
+                               ),
+                        fluidRow(
+                            column(width=12,
+                                   # HTML(print("<b>User selected:</b>")),
+                                   # box(
+                                   #     title = "User Input", width = NULL, status = "primary",
+                                   #     div(style = 'overflow-x: scroll', DT::dataTableOutput("responses1"))
+                                   # ),
+                                   # #, width = 300), tags$hr(),
+                                   box(
+                                       title = "Avg G1, G2, G3 Grades Prediction: Regression Tree:", width = NULL, status = "primary",
+                                       textOutput("PredictStudentGradesRT")
+                                       
+                                   ),
+                                   box(
+                                       title = "Avg G1, G2, G3 Grades Prediction: Bagging:", width = NULL, status = "primary",
+                                       textOutput("PredictStudentGradesBG")
+                                   )
+                                   
+                                   )
+                            
+                                )
+                        )
+                ) # end of tabItem 6:PredictGrades
             ) # end of tabItemS 
     ) # end of dashboardBody
 ) # end of dashboardPage
@@ -283,7 +399,7 @@ server <- function(input, output) {
     
     # Visualize Decision Tree 
     output$DecisionTree <- renderPlot({
-        require(input$RTreeMinsplit)
+        req(input$RTreeMinsplit)
         withProgress(message = 'Calculation in progress',
                      detail = 'This may take a while...', value = 0, {
                          for (i in 1:15) {
@@ -291,7 +407,7 @@ server <- function(input, output) {
                              Sys.sleep(0.25)
                          }
                      })
-        outPutTreeModel <- rpart(
+        outPutTreeModel <<- rpart(
             formula = GAvg ~ .,
             data    = out_train,
             method  = "anova", 
@@ -301,18 +417,12 @@ server <- function(input, output) {
     })
     
     output$DecisionTreeCp <- renderPlot({
-        require(input$RTreeMinsplit)
-        outPutTreeModel <- rpart(
-            formula = GAvg ~ .,
-            data    = out_train,
-            method  = "anova", 
-                control = list(minsplit = 10, maxdepth = 20, xval = 10)
-        )
+        req(input$RTreeMinsplit)
         plotcp(outPutTreeModel)
     })
     
     output$DecisionTreeRMSE <- renderPrint({
-        outPutTreeModel <- rpart(
+        outPutTreeModel <<- rpart(
             formula = GAvg ~ .,
             data    = out_train,
             method  = "anova", 
@@ -326,7 +436,7 @@ server <- function(input, output) {
         # bagged_cv
         withProgress(message = 'Calculation in progress',
                      detail = 'This may take a while...', value = 0, {
-                         for (i in 1:15) {
+                         for (i in 1:35) {
                              incProgress(1/15)
                              Sys.sleep(0.25)
                          }
@@ -341,14 +451,46 @@ server <- function(input, output) {
         RMSE(pred, out_test$GAvg) 
     })
     
+    # Whenever a field is filled, aggregate all form data
+    formFields <- c("InpStudentAge","InpMedu","InpFedu","InpStudyTimeinHours","InpFreetime","InpWorkDayAlc","InpWeekEndAlc","InpAbsence",
+                   "InpHealth") #,"InpHigherEd","Inpfamsup" )
+ 
+    # Whenever a field is filled, aggregate all form data
+    formData <- reactive({
+        data <- sapply(formFields, function(x) input[[x]])
+        data
+    })
     
+    # When the Submit button is clicked, save the form data
+    observeEvent(input$submit, {
+        saveData(formData())
+    })
+    
+    # Show the previous responses
+    # (update with current response when Submit is clicked)
+    output$responses1 <- DT::renderDataTable({
+        input$submit
+        loadData()
+    })     
+    
+    output$PredictStudentGradesRT <- renderText({
+        # pred <- predict(outPutTreeModel, newdata = sample_n(out_test,1))
+        pred <- predict(outPutTreeModel, newdata = responses1)
+        pred
+    })
+    
+    output$PredictStudentGradesBG <- renderText({
+        # pred <- predict(bagged_cv, sample_n(out_test,1))
+        pred <- predict(bagged_cv, responses1)
+        pred
+    })
     
     output$downloadDataAnalysisPlot <- downloadHandler(
         filename = function(){
             paste0("StudentGradeScatterPlot",".",input$fileTypeChoice)
         },
         content = function(file){
-            dfFactors <- mathDataSetReactive %>% dplyr::select(!!quo(input$ScttrVariable),GAvg)
+            dfFactors <- out %>% dplyr::select(!!quo(input$ScttrVariable),GAvg)
             if(input$fileTypeChoice=="png")
                 png(file)
             else
