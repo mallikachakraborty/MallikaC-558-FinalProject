@@ -1,14 +1,3 @@
-check.packages <- function(pkg){
-  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-  if (length(new.pkg)) 
-    install.packages(new.pkg, dependencies = TRUE)
- # sapply(pkg, require, character.only = TRUE)
-}
-
-# Usage example
-packages<-c("rsample", "fpc", "rpart", "rpart.plot", "ipred", "summarytools","corrplot")
-check.packages(packages)
-
 library(shiny)
 library(shinydashboard) 
 library(summarytools)  ## to provide summary of the meta data 
@@ -18,16 +7,12 @@ library(dplyr)
 library(corrplot)
 library(ggplot2) 
 library(cluster) # for gower similarity and pam
-#library(Rtsne) # for t-SNE plot
+library(Rtsne) # for t-SNE plot
 library(fpc)
 library(tree) # for decision Tree
-# library(MASS) 
-library(rpart)       # performing regression trees
-library(rpart.plot)  # plotting regression trees
+library(MASS) 
 library(ipred) # bagging
 library(caret) # bagging
-install.packages("rsample")
-library(rsample)     # data splitting 
 
 
 # setwd("~/StudentsMath")
@@ -298,7 +283,7 @@ server <- function(input, output) {
     
     # Visualize Decision Tree 
     output$DecisionTree <- renderPlot({
-        req(input$RTreeMinsplit)
+        require(input$RTreeMinsplit)
         withProgress(message = 'Calculation in progress',
                      detail = 'This may take a while...', value = 0, {
                          for (i in 1:15) {
@@ -316,7 +301,7 @@ server <- function(input, output) {
     })
     
     output$DecisionTreeCp <- renderPlot({
-        req(input$RTreeMinsplit)
+        require(input$RTreeMinsplit)
         outPutTreeModel <- rpart(
             formula = GAvg ~ .,
             data    = out_train,
@@ -341,7 +326,7 @@ server <- function(input, output) {
         # bagged_cv
         withProgress(message = 'Calculation in progress',
                      detail = 'This may take a while...', value = 0, {
-                         for (i in 1:35) {
+                         for (i in 1:15) {
                              incProgress(1/15)
                              Sys.sleep(0.25)
                          }

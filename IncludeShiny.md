@@ -6,11 +6,11 @@ Source: https://www.kaggle.com/dipam7/student-grade-prediction
 
 	* What are the parameters influences Grades e.g.
 		* Education Of Parents
-		* Financial Situtation
+		* Financial Situation
 		* Males Vs Female/ Age of the Students
 		* Commute time
 	* Unsupervised Learning from the Data/ Student Segments
-	* Predict Students Grade: Decision Tree/ K Nearest Neigbhour
+	* Predict Students Grade: Decision Tree/ K Nearest Neighbor
 	
 
 # Feature Description <h6>
@@ -57,7 +57,6 @@ student's guardian (nominal: 'mother', 'father' or 'other')
 **traveltime**
 
 **home to school travel time** (numeric: 1 - <15 min., 2 - 15 to 30 min., 3 - 30 min. to 1 hour, or 4 - >1 hour)
-
 
 **studytime**
 
@@ -145,11 +144,11 @@ The Shiny app has following pages and corresponding sections:
 
 **Sample**
 
-This page contains summary raw data. User can download the CSV.
-This page also shows the numerical summary of raw data
+This page contains summary of raw data. User can download the CSV file.
+This page also shows the numerical summary of raw data.
 
 **Data Exploration**
-The top section of this page contain the correlation plot among all predictor variables.
+The top section of this page contains the correlation plot among all predictor variables.
 The bottom section of the page shows relationship between predictor variables and response score variable. User can select as many predictor variables s/he needs.
 
 **Cluster**
