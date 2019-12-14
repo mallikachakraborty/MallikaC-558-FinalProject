@@ -141,5 +141,29 @@ final grade (numeric: from 0 to 20)
 
 # About the App: <h4>
 
-The Shiny app has following tabs:
- ** **
+The Shiny app has following pages and corresponding sections:
+
+**Sample**
+
+This page contains summary raw data. User can download the CSV.
+This page also shows the numerical summary of raw data
+
+**Data Exploration**
+The top section of this page contain the correlation plot among all predictor variables.
+The bottom section of the page shows relationship between predictor variables and response score variable. User can select as many predictor variables s/he needs.
+
+**Cluster**
+The cluster page shows the k-means cluster plots. 
+The top section line plot helps user to select optimal number of clusters.
+
+The bottom section has the drop down for user to select number of cluster and the graph refreshes accordingly.           
+
+**Predict**
+
+The first drop down filter lets user select the supervised model s/he needs to use in study. Models used are 1. Regression Tree and, 2. Bagging
+
+Regression Tree: The top graph is to help user select optimal number of tree.
+The bottom section is for user to select custom values of hyper parameters needed to create the tree.
+
+Bagging: The top section shows the importance of predictor variables as found from from bagging model.
+The bottom section allows user to select folds for cross validation and rerun the model.
