@@ -2,25 +2,25 @@
 This data approach student achievement in secondary education of two Portuguese schools. The data attributes include student grades, demographic, social and school related features) and it was collected by using school reports and questionnaires. Two datasets are provided regarding the performance in two distinct subjects: Mathematics (mat) and Portuguese language (por). In [Cortez and Silva, 2008], the two datasets were modeled under binary/five-level classification and regression tasks. Important note: the target attribute G3 has a strong correlation with attributes G2 and G1. This occurs because G3 is the final year grade (issued at the 3rd period), while G1 and G2 correspond to the 1st and 2nd period grades. It is more difficult to predict G3 without G2 and G1, but such prediction is much more useful (see paper source for more details).
 Source: https://www.kaggle.com/dipam7/student-grade-prediction
 
-# The Shiny App contains following information:<h6>
+# The Shiny App contains following information:<h4>
 
-	* Sample
+	* **Sample**
 		* Sample Data - User can change number of rows to view
 		* Numeric Summary
-	* Data Exploration
+	* **Data Exploration**
 		* Correlation plot among all predictor variables
 		* Relationship between response and predictor variable - i. User can add/remove predictor. ii. Select part of the plot to view details. iii. Download plot 
-	* Cluster
+	* **Cluster**
 		* Line plot assisting user to select optimal number of clusters
 		* The cluster plot (dendrogram is in the next tab- the decision tree) 
-	* Models for Predictions
+	* **Models for Predictions**
 		* Drop down to select supervised model - i. Regression Tree ii. Bagging
 		* Plot/Important variable assisting user to customize the model further
-	* Predict Grades
+	* **Predict Grades**
 		* User can select the values for predictor variables to get prediction of scores. The values of predictor variables are restricted to test dataset.
 	
 
-# Feature Description <h6>
+# Feature Description <h4>
 **school**
 
 **student's school** (binary: 'GP' - Gabriel Pereira or 'MS' - Mousinho da Silveira)
